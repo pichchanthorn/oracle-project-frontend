@@ -21,6 +21,8 @@
     </div>
   </header>
 
+  <p *ngIf="errorMessage" style="color:#dc2626; margin: 0 0 12px;">{{ errorMessage }}</p>
+
   <section class="summary-strip" aria-label="Category summary">
     <article>
       <span>Total Categories</span>
@@ -96,7 +98,11 @@
           </td>
         </tr>
 
-        <tr *ngIf="filteredCategories.length === 0">
+        <tr *ngIf="isLoading">
+          <td colspan="6" class="empty-state">Loading categories…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading && filteredCategories.length === 0">
           <td colspan="6" class="empty-state">No categories match the selected filters.</td>
         </tr>
       </tbody>

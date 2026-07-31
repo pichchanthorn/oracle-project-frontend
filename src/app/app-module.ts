@@ -14,6 +14,7 @@ import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { CommonModule } from '@angular/common';
     BrowserModule, 
     AppRoutingModule,
     CommonModule,
-    FormsModule
+    FormsModule,
+    HttpClientModule
   ],
   providers: [provideBrowserGlobalErrorListeners()],
   bootstrap: [App],
