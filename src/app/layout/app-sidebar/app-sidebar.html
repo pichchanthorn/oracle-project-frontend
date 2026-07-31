@@ -1,0 +1,114 @@
+<aside class="sidebar" [class.sidebar-collapsed]="isCollapsed">
+  <button
+    class="sidebar-toggle"
+    type="button"
+    [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+    (click)="toggleSidebar()"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true">{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
+  </button>
+
+  <div class="sidebar-header">
+    <span class="sidebar-icon brand-icon">
+      <span class="material-symbols-outlined" aria-hidden="true">diamond</span>
+    </span>
+    <div class="sidebar-header-text">
+      <strong>Elite Diamonds</strong>
+      <span>Showroom Terminal 01</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Primary navigation">
+    <a
+      *ngFor="let item of navItems"
+      class="nav-item"
+      [class.disabled]="!item.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [routerLink]="item.route || null"
+      [attr.aria-label]="isCollapsed ? item.label : null"
+      [attr.data-label]="item.label"
+    >
+      <span class="sidebar-icon">
+        <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+      </span>
+      <span class="nav-text">{{ item.label }}</span>
+    </a>
+
+    <section class="nav-group" aria-label="Settings navigation">
+      <button
+        class="nav-item group-parent"
+        type="button"
+        [class.active-parent]="isSettingsRoute"
+        [class.open]="isSettingsOpen"
+        [attr.aria-expanded]="isSettingsOpen"
+        [attr.aria-label]="isCollapsed ? settingsGroup.label : null"
+        [attr.data-label]="settingsGroup.label"
+        (click)="toggleSettings()"
+      >
+        <span class="sidebar-icon">
+          <span class="material-symbols-outlined" aria-hidden="true">{{ settingsGroup.icon }}</span>
+        </span>
+        <span class="nav-text">{{ settingsGroup.label }}</span>
+        <span class="material-symbols-outlined nav-caret" aria-hidden="true">expand_more</span>
+      </button>
+
+      <div class="settings-flyout" *ngIf="isCollapsed" aria-label="Settings submenu">
+        <p>{{ settingsGroup.label }}</p>
+        <a
+          *ngFor="let child of settingsGroup.children"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLink]="child.route"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">{{ child.icon }}</span>
+          {{ child.label }}
+        </a>
+      </div>
+
+      <div class="nav-children" *ngIf="isSettingsOpen">
+        <a
+          *ngFor="let child of settingsGroup.children"
+          class="nav-item child-item"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLink]="child.route"
+          [attr.aria-label]="isCollapsed ? child.label : null"
+          [attr.data-label]="child.label"
+        >
+          <span class="sidebar-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ child.icon }}</span>
+          </span>
+          <span class="nav-text">{{ child.label }}</span>
+        </a>
+      </div>
+    </section>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button
+      class="new-transaction-btn"
+      type="button"
+      [attr.aria-label]="isCollapsed ? 'New Transaction' : null"
+      data-label="New Transaction"
+    >
+      <span class="sidebar-icon">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+      </span>
+      <span class="nav-text">New Transaction</span>
+    </button>
+
+    <a class="support-link" href="#" [attr.aria-label]="isCollapsed ? 'Terminal Lock' : null" data-label="Terminal Lock">
+      <span class="sidebar-icon">
+        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+      </span>
+      <span class="nav-text">Terminal Lock</span>
+    </a>
+    <a class="support-link" href="#" [attr.aria-label]="isCollapsed ? 'Support' : null" data-label="Support">
+      <span class="sidebar-icon">
+        <span class="material-symbols-outlined" aria-hidden="true">help</span>
+      </span>
+      <span class="nav-text">Support</span>
+    </a>
+  </div>
+</aside>

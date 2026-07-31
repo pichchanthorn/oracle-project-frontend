@@ -1,0 +1,160 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <strong>Categories</strong>
+      </nav>
+      <h2>Category Management</h2>
+      <p>Group inventory items into categories for reporting and search.</p>
+    </div>
+
+    <div class="page-actions">
+      <button class="secondary-action" type="button">
+        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+        Export Data
+      </button>
+      <button class="primary-action" type="button" (click)="openModal()">Add New Category</button>
+    </div>
+  </header>
+
+  <section class="summary-strip" aria-label="Category summary">
+    <article>
+      <span>Total Categories</span>
+      <strong>{{ categories.length }}</strong>
+    </article>
+    <article>
+      <span>Active Categories</span>
+      <strong>{{ activeCategoryCount }}</strong>
+    </article>
+    <article>
+      <span>Total Items</span>
+      <strong>{{ totalItemCount }}</strong>
+    </article>
+  </section>
+
+  <section class="filter-bar" aria-label="Category filters">
+    <div class="filter-controls">
+      <label>
+        <span>Status Filter</span>
+        <select name="statusFilter" [(ngModel)]="statusFilter">
+          <option>All Statuses</option>
+          <option>Active Only</option>
+          <option>Inactive Only</option>
+        </select>
+      </label>
+    </div>
+
+    <p>
+      Showing <strong>{{ filteredCategories.length }}</strong> categories
+    </p>
+  </section>
+
+  <section class="data-card" aria-label="Category data grid">
+    <table>
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Items</th>
+          <th class="align-right">Status</th>
+          <th class="align-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of filteredCategories; let index = index; trackBy: trackByCategoryId">
+          <td class="row-number">{{ (index + 1).toString().padStart(2, '0') }}</td>
+          <td>
+            <div class="unit-name">
+              <strong>
+                <span class="material-symbols-outlined category-icon" aria-hidden="true">{{ category.icon }}</span>
+                {{ category.name }}
+              </strong>
+            </div>
+          </td>
+          <td class="measure">{{ category.description }}</td>
+          <td class="unit-symbol">{{ category.itemCount }}</td>
+          <td class="align-right">
+            <button
+              class="status-pill"
+              type="button"
+              [class.inactive]="!category.active"
+              (click)="toggleCategoryStatus(category)"
+            >
+              <span aria-hidden="true"></span>
+              {{ category.active ? 'Active' : 'Inactive' }}
+            </button>
+          </td>
+          <td class="align-right">
+            <button class="row-action" type="button" aria-label="Open category actions">
+              <span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredCategories.length === 0">
+          <td colspan="6" class="empty-state">No categories match the selected filters.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="pagination">
+    <p>Page <strong>1</strong> of 1</p>
+    <div>
+      <button type="button" disabled>Previous</button>
+      <button type="button">Next</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal-backdrop" *ngIf="isModalOpen" role="dialog" aria-modal="true" aria-labelledby="new-category-title">
+  <form class="modal" #categoryForm="ngForm" (ngSubmit)="createCategory()">
+    <header class="modal-header">
+      <h3 id="new-category-title">Create New Category</h3>
+      <button class="row-action" type="button" aria-label="Close modal" (click)="closeModal()">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <label>
+        <span>Category Name</span>
+        <input
+          name="categoryName"
+          type="text"
+          placeholder="e.g., Pearls"
+          required
+          [(ngModel)]="newCategory.name"
+        >
+      </label>
+
+      <label>
+        <span>Description</span>
+        <input
+          name="categoryDescription"
+          type="text"
+          placeholder="Short description"
+          [(ngModel)]="newCategory.description"
+        >
+      </label>
+
+      <label>
+        <span>Status</span>
+        <select name="categoryStatus" [(ngModel)]="newCategory.active">
+          <option [ngValue]="true">Active</option>
+          <option [ngValue]="false">Inactive</option>
+        </select>
+      </label>
+    </div>
+
+    <footer class="modal-actions">
+      <button class="secondary-action" type="button" (click)="closeModal()">Cancel</button>
+      <button class="primary-action" type="submit" [disabled]="categoryForm.invalid">Create Category</button>
+    </footer>
+  </form>
+</div>

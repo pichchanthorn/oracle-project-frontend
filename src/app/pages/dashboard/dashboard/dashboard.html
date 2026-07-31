@@ -1,0 +1,237 @@
+<div class="dashboard-page">
+  <header class="dashboard-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Workspace</span>
+        <span>/</span>
+        <strong>Dashboard</strong>
+      </nav>
+      <h2>Executive Performance</h2>
+      <p>Lumina Elite performance analytics - Q4 overview</p>
+    </div>
+
+    <div class="dashboard-actions">
+      <button class="secondary-action" type="button">
+        <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+        Q4 Overview
+      </button>
+      <button class="primary-action" type="button">
+        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+        Export Report
+      </button>
+    </div>
+  </header>
+
+  <section class="metric-grid" aria-label="Performance summary">
+    <article
+      *ngFor="let metric of metrics; trackBy: trackByLabel"
+      class="metric-card"
+      [class]="'metric-card tone-' + metric.tone"
+    >
+      <div class="metric-topline">
+        <span class="metric-icon">
+          <span class="material-symbols-outlined" aria-hidden="true">{{ metric.icon }}</span>
+        </span>
+        <span class="metric-change" [class.neutral]="!metric.positive">
+          <span *ngIf="metric.positive" class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+          {{ metric.change }}
+        </span>
+      </div>
+      <span class="metric-label">{{ metric.label }}</span>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="dashboard-panel sales-panel">
+      <header class="panel-header">
+        <div>
+          <h3>Sales Trends and Forecasting</h3>
+          <p>High-value activity across the selected period</p>
+        </div>
+
+        <div class="period-toggle" aria-label="Sales period">
+          <button
+            *ngFor="let period of periodOptions"
+            type="button"
+            [class.active]="selectedPeriod === period"
+            (click)="selectPeriod(period)"
+          >
+            {{ period }}
+          </button>
+        </div>
+      </header>
+
+      <div class="trend-chart" aria-label="Weekly sales trend">
+        <div
+          *ngFor="let day of salesTrend; trackBy: trackByDay"
+          class="trend-column"
+          [class.highlighted]="day.highlighted"
+        >
+          <span class="trend-value">{{ day.value }}</span>
+          <div class="trend-track" [style.height.%]="day.trackHeight">
+            <div class="trend-fill" [style.height.%]="day.fillHeight"></div>
+          </div>
+          <span class="trend-day">{{ day.day }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="dashboard-panel inventory-panel">
+      <header class="panel-header compact">
+        <div>
+          <h3>Inventory Health</h3>
+          <p>4.2k active SKUs</p>
+        </div>
+      </header>
+
+      <div class="donut-wrap">
+        <svg class="donut-chart" viewBox="0 0 36 36" role="img" aria-label="Inventory composition">
+          <path
+            class="donut-base"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke-width="4"
+          ></path>
+          <path
+            *ngFor="let segment of inventorySegments; trackBy: trackByLabel"
+            class="donut-segment"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke-width="4"
+            [attr.stroke-dasharray]="segment.dasharray"
+            [attr.stroke-dashoffset]="segment.dashoffset"
+            [style.stroke]="segment.color"
+          ></path>
+        </svg>
+        <div class="donut-center">
+          <strong>4.2k</strong>
+          <span>Total SKU</span>
+        </div>
+      </div>
+
+      <div class="inventory-list">
+        <div *ngFor="let segment of inventorySegments; trackBy: trackByLabel" class="inventory-row">
+          <span class="legend-dot" [style.background]="segment.color"></span>
+          <span>{{ segment.label }}</span>
+          <strong>{{ segment.percent }}%</strong>
+          <em>{{ segment.count }}</em>
+        </div>
+      </div>
+    </article>
+
+    <!-- <article class="dashboard-panel alert-panel">
+      <header class="panel-header compact">
+        <div>
+          <h3>Operational Watch</h3>
+          <p>Security, vault, and certificate status</p>
+        </div>
+      </header>
+
+      <div class="watch-list">
+        <article *ngFor="let alert of stockAlerts; trackBy: trackByLabel">
+          <span class="watch-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ alert.icon }}</span>
+          </span>
+          <div>
+            <span>{{ alert.label }}</span>
+            <strong>{{ alert.value }}</strong>
+            <p>{{ alert.detail }}</p>
+          </div>
+        </article>
+      </div>
+    </article> -->
+
+    <!-- <section class="dashboard-panel transactions-panel" aria-label="Recent high-value transactions">
+      <header class="panel-header">
+        <div>
+          <h3>Recent High-Value Transactions</h3>
+          <p>Latest showroom activity and certificate movement</p>
+        </div>
+        <button class="text-action" type="button">View All Activities</button>
+      </header>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Date</th>
+              <th>Client Name</th>
+              <th>Item Description</th>
+              <th class="align-right">Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let transaction of transactions; trackBy: trackByTransactionId"
+              tabindex="0"
+              (click)="openTransactionPreview(transaction)"
+              (keydown.enter)="openTransactionPreview(transaction)"
+            >
+              <td class="transaction-id">{{ transaction.id }}</td>
+              <td class="muted">{{ transaction.date }}</td>
+              <td>
+                <div class="client-cell">
+                  <span>{{ transaction.initials }}</span>
+                  <strong>{{ transaction.client }}</strong>
+                </div>
+              </td>
+              <td>{{ transaction.item }}</td>
+              <td class="align-right amount">{{ transaction.amount }}</td>
+              <td>
+                <span class="status-pill" [class.processing]="transaction.status === 'Processing'">
+                  {{ transaction.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section> -->
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="activeTransaction" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+  <article class="quick-view">
+    <header>
+      <div>
+        <span>{{ activeTransaction.id }}</span>
+        <h3 id="quick-view-title">Diamond Quick View</h3>
+        <p>{{ activeTransaction.certificate }}</p>
+      </div>
+      <button class="icon-action" type="button" aria-label="Close preview" (click)="closeTransactionPreview()">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="quick-view-body">
+      <div class="stone-preview" aria-hidden="true">
+        <span class="material-symbols-outlined">diamond</span>
+      </div>
+
+      <div class="quick-details">
+        <section>
+          <span>Client</span>
+          <strong>{{ activeTransaction.client }}</strong>
+        </section>
+        <section>
+          <span>Item</span>
+          <strong>{{ activeTransaction.item }}</strong>
+        </section>
+        <div class="detail-grid">
+          <section>
+            <span>Clarity</span>
+            <strong>{{ activeTransaction.clarity }}</strong>
+          </section>
+          <section>
+            <span>Cut</span>
+            <strong>{{ activeTransaction.cut }}</strong>
+          </section>
+        </div>
+        <button class="primary-action full-width" type="button">Assign to Client</button>
+      </div>
+    </div>
+  </article>
+</div>

@@ -1,1 +1,66 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --background: #f7f9fb;
+  --surface: #ffffff;
+  --surface-muted: #f1f4f7;
+  --surface-raised: #e1e5e9;
+  --ink: #171b21;
+  --ink-muted: #555f6d;
+  --ink-soft: #7a8290;
+  --line: #c8ced6;
+  --line-soft: rgba(23, 27, 33, 0.14);
+  --primary: #080b10;
+  --primary-soft: #131b2e;
+  --accent: #007a92;
+  --accent-bright: #35c5dc;
+  --danger: #ba1a1a;
+  --success: #087f5b;
+  --shadow-soft: 0 24px 80px rgba(8, 11, 16, 0.12);
+  font-family: "Inter", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--ink);
+  font-family: "Inter", Arial, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.material-symbols-outlined {
+  direction: ltr;
+  display: inline-block;
+  font-family: "Material Symbols Outlined";
+  font-feature-settings: "liga";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: 0;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}

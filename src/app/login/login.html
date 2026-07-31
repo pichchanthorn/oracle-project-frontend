@@ -1,0 +1,284 @@
+<main class="login-shell" [class.verification-shell]="isVerificationStep">
+  <section
+    class="brand-panel"
+    [class.otp-brand-panel]="isVerificationStep"
+    aria-label="Elite Diamonds terminal status"
+  >
+    <ng-container *ngIf="!isVerificationStep; else verificationBrand">
+      <div class="brand-photo" aria-hidden="true"></div>
+      <div class="brand-grid" aria-hidden="true"></div>
+
+      <div class="brand-content">
+        <div class="brand-mark">
+          <span class="material-symbols-outlined brand-icon" aria-hidden="true">diamond</span>
+          <h1>Elite Diamonds</h1>
+        </div>
+
+        <div class="brand-copy">
+          <p class="eyebrow">LuxeDiamond POS</p>
+          <h2>Lustre &amp; Precision Terminal</h2>
+          <p>
+            Access the showroom transaction suite for curated inventory,
+            associate sales, and secure terminal activity.
+          </p>
+        </div>
+
+        <div class="terminal-strip">
+          <div>
+            <span class="strip-label">Station</span>
+            <strong>{{ terminalName }}</strong>
+          </div>
+          <span class="strip-divider" aria-hidden="true"></span>
+          <div>
+            <span class="strip-label">Status</span>
+            <strong class="secure-state">
+              <span aria-hidden="true"></span>
+              Secure
+            </strong>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #verificationBrand>
+      <div class="otp-brand-orb" aria-hidden="true"></div>
+
+      <div class="otp-brand-content">
+        <div class="otp-brand-heading">
+          <h1>Elite Diamonds</h1>
+          <p>Lustre &amp; Precision Terminal</p>
+        </div>
+
+        <div class="diamond-frame">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrbDijXh8tOlog0GiJ1q5ocUcTTaNbIxXSRb002Uptq3go-WKgfbPJAzBB-TUQ81_UTT6_fy-Jie3Rst-Wm8XwOdiucCa_YNqT0igT16syejk7HuIJJaK6Xes_KAQqDA6zcjAlyNTxsieMHUIlEpKnvijcq6L9lFue0UNshus-u5sUR_NMvRj40aGqmH9q0OvLXFZco3x7y4Qwp6QHFe81dtoKxzhfs898DDvTccZi1mLMBOf27N5E"
+            alt="Brilliant-cut diamond reflecting blue and silver light"
+          >
+        </div>
+
+        <p class="precision-quote">"Excellence is not an act, but a habit of precision."</p>
+
+        <div class="system-security">
+          <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+          <div>
+            <p>System Security</p>
+            <span>Encrypted Session • {{ terminalName }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </section>
+
+  <section class="form-panel" [class.verification-panel]="isVerificationStep">
+    <div class="login-workspace" [class.verification-workspace]="isVerificationStep">
+      <div class="mobile-brand">
+        <span class="material-symbols-outlined mobile-brand-icon" aria-hidden="true">diamond</span>
+        <span>Elite Diamonds</span>
+      </div>
+
+      <ng-container *ngIf="currentStep === 'credentials'; else verificationStep">
+        <header class="form-header">
+          <p class="eyebrow">Associate Access</p>
+          <h2>Secure Associate Login</h2>
+          <p>Enter your credentials to access the LuxeDiamond POS system.</p>
+        </header>
+
+        <form #loginForm="ngForm" class="login-form" novalidate (ngSubmit)="signIn(loginForm)">
+          <div
+            class="form-field"
+            [class.field-focused]="focusedField === 'associateId'"
+            [class.field-invalid]="associateId.invalid && associateId.touched"
+          >
+            <label for="associate-id">Associate ID or Email</label>
+            <div class="input-row">
+              <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+              <input
+                #associateId="ngModel"
+                id="associate-id"
+                name="associateId"
+                type="text"
+                placeholder="E.g. AD-992384"
+                required
+                autocomplete="username"
+                [(ngModel)]="credentials.associateId"
+                (focus)="setFocusedField('associateId')"
+                (blur)="setFocusedField(null)"
+              >
+            </div>
+            <p class="field-error" *ngIf="associateId.invalid && associateId.touched">
+              Associate ID is required.
+            </p>
+          </div>
+
+          <div
+            class="form-field"
+            [class.field-focused]="focusedField === 'password'"
+            [class.field-invalid]="password.invalid && password.touched"
+          >
+            <div class="label-row">
+              <label for="password">Password</label>
+              <a href="#" aria-label="Recover forgotten password">Forgot Password?</a>
+            </div>
+            <div class="input-row">
+              <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+              <input
+                #password="ngModel"
+                id="password"
+                name="password"
+                [type]="passwordInputType"
+                placeholder="************"
+                required
+                autocomplete="current-password"
+                [(ngModel)]="credentials.password"
+                (focus)="setFocusedField('password')"
+                (blur)="setFocusedField(null)"
+              >
+              <button
+                class="icon-button"
+                type="button"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                (click)="togglePasswordVisibility()"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">{{ passwordIcon }}</span>
+              </button>
+            </div>
+            <p class="field-error" *ngIf="password.invalid && password.touched">
+              Password is required.
+            </p>
+          </div>
+
+          <label class="remember-row">
+            <input
+              type="checkbox"
+              name="rememberTerminal"
+              [(ngModel)]="credentials.rememberTerminal"
+            >
+            <span class="switch" aria-hidden="true"></span>
+            <span>Remember this terminal</span>
+          </label>
+
+          <button
+            class="submit-button"
+            type="button"
+            (click)="signIn(loginForm)"
+            [disabled]="isAuthenticating"
+          >
+            <span
+              class="material-symbols-outlined"
+              [class.spin]="isAuthenticating"
+              aria-hidden="true"
+            >
+              {{ isAuthenticating ? 'progress_activity' : 'login' }}
+            </span>
+            {{ submitLabel }}
+            <span
+              class="material-symbols-outlined arrow-icon"
+              *ngIf="!isAuthenticating"
+              aria-hidden="true"
+            >
+              arrow_forward
+            </span>
+          </button>
+        </form>
+
+        <footer class="security-footer" aria-label="Security details">
+          <p>Authorized use only. All terminal activity is recorded and audited.</p>
+          <div>
+            <span>
+              <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+              256-bit AES
+            </span>
+            <span>
+              <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+              {{ terminalName }}
+            </span>
+          </div>
+        </footer>
+      </ng-container>
+
+      <ng-template #verificationStep>
+        <header class="verification-header">
+          <h2>Two-Factor Verification</h2>
+          <p>
+            We've sent a 6-digit code to your registered mobile device ending in
+            <strong>{{ maskedDevice }}</strong>. Enter it below to secure your session.
+          </p>
+        </header>
+
+        <form class="otp-form" novalidate (ngSubmit)="verifyOtp()">
+          <div class="otp-inputs" aria-label="Two-factor verification code">
+            <input
+              #otpInput
+              *ngFor="let digit of otpDigits; let index = index; trackBy: trackByIndex"
+              class="otp-input"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="1"
+              [value]="digit"
+              [disabled]="isVerifying || accessGranted"
+              [attr.autocomplete]="index === 0 ? 'one-time-code' : 'off'"
+              [attr.aria-label]="'Verification digit ' + (index + 1)"
+              (input)="handleOtpInput($event, index)"
+              (keydown)="handleOtpKeydown($event, index)"
+              (paste)="handleOtpPaste($event)"
+            >
+          </div>
+
+          <p class="field-error otp-error" *ngIf="otpTouched && !isOtpComplete">
+            Enter the 6-digit verification code.
+          </p>
+
+          <p class="resend-message" *ngIf="resendMessage">{{ resendMessage }}</p>
+
+          <div class="otp-actions">
+            <button
+              class="submit-button otp-submit"
+              type="button"
+              (click)="verifyOtp()"
+              [class.success]="accessGranted"
+              [disabled]="isVerifying || accessGranted"
+            >
+              <span
+                class="material-symbols-outlined"
+                [class.spin]="isVerifying"
+                aria-hidden="true"
+              >
+                {{ accessGranted ? 'check_circle' : isVerifying ? 'progress_activity' : 'verified_user' }}
+              </span>
+              {{ verificationLabel }}
+              <span
+                class="material-symbols-outlined arrow-icon"
+                *ngIf="!isVerifying && !accessGranted"
+                aria-hidden="true"
+              >
+                arrow_forward
+              </span>
+            </button>
+
+            <div class="verification-links">
+              <button class="resend-button" type="button" [disabled]="isVerifying" (click)="resendCode()">
+                <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+                Resend Code
+              </button>
+              <button class="different-account-button" type="button" (click)="useDifferentAccount()">
+                Sign in with a different account
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <footer class="verification-footer" aria-label="Verification security details">
+          <div>
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            <span>Authorized Use Only</span>
+          </div>
+          <div>
+            <span class="security-chip">256-bit AES</span>
+            <span>{{ terminalName }}</span>
+          </div>
+        </footer>
+      </ng-template>
+    </div>
+  </section>
+</main>
