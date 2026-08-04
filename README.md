@@ -1,8 +1,13 @@
-# Frontend
+A browser app can't talk to Oracle directly, so this frontend calls the backend API, which handles the database connection.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.19.
+## Tech stack
+
+- Angular 21
+- TypeScript
 
 ## Development server
+
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.19.
 
 To start a local development server, run:
 
@@ -11,6 +16,8 @@ ng serve
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+> Make sure the [backend API](https://github.com/pichchanthorn/oracle-project-backend) is running first (`http://localhost:3000`) so the app has data to load.
 
 ## Code scaffolding
 
