@@ -1,3 +1,16 @@
+# Lumina Diamond POS — Frontend
+
+Angular frontend for **Lumina Diamond POS**, a full-stack Point of Sale system for a diamond/jewelry store, built as an Oracle PL/SQL final project (BBU).
+
+This is one half of the system. The other half — the backend API and Oracle database layer — lives here: **[oracle-project-backend](https://github.com/pichchanthorn/oracle-project-backend)**
+
+## Architecture
+
+```
+Angular (this repo)  →  Node/Express API  →  Oracle Database
+     frontend              backend
+```
+
 A browser app can't talk to Oracle directly, so this frontend calls the backend API, which handles the database connection.
 
 ## Tech stack
