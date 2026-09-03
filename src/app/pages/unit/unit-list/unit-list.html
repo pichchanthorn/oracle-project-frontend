@@ -21,47 +21,18 @@
     </div>
   </header>
 
+  <p *ngIf="errorMessage()" style="color:#dc2626; margin: 0 0 12px;">{{ errorMessage() }}</p>
+
   <section class="summary-strip" aria-label="Unit summary">
     <article>
       <span>Total Units</span>
-      <strong>{{ units.length }}</strong>
-    </article>
-    <article>
-      <span>Active Units</span>
-      <strong>{{ activeUnitCount }}</strong>
-    </article>
-    <article>
-      <span>Unit Groups</span>
-      <strong>3</strong>
+      <strong>{{ units().length }}</strong>
     </article>
   </section>
 
   <section class="filter-bar" aria-label="Unit filters">
-    <div class="filter-controls">
-      <label>
-        <span>Status Filter</span>
-        <select name="statusFilter" [(ngModel)]="statusFilter">
-          <option>All Statuses</option>
-          <option>Active Only</option>
-          <option>Inactive Only</option>
-        </select>
-      </label>
-
-      <span class="filter-divider" aria-hidden="true"></span>
-
-      <label>
-        <span>Unit Group</span>
-        <select name="groupFilter" [(ngModel)]="groupFilter">
-          <option>All Types</option>
-          <option>Weight</option>
-          <option>Volume</option>
-          <option>Count</option>
-        </select>
-      </label>
-    </div>
-
     <p>
-      Showing <strong>{{ filteredUnits.length }}</strong> premium units
+      Showing <strong>{{ units().length }}</strong> units
     </p>
   </section>
 
@@ -72,42 +43,31 @@
           <th>No.</th>
           <th>Unit Name</th>
           <th>Symbol</th>
-          <th>Conversion Measure</th>
-          <th class="align-right">Status</th>
           <th class="align-right">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let unit of filteredUnits; let index = index; trackBy: trackByUnitId">
+        <tr *ngFor="let unit of units(); let index = index; trackBy: trackByUnitId">
           <td class="row-number">{{ (index + 1).toString().padStart(2, '0') }}</td>
           <td>
             <div class="unit-name">
               <strong>{{ unit.name }}</strong>
-              <span>{{ unit.description }}</span>
             </div>
           </td>
           <td class="unit-symbol">{{ unit.symbol }}</td>
-          <td class="measure">{{ formatMeasure(unit.measure) }}</td>
           <td class="align-right">
-            <button
-              class="status-pill"
-              type="button"
-              [class.inactive]="!unit.active"
-              (click)="toggleUnitStatus(unit)"
-            >
-              <span aria-hidden="true"></span>
-              {{ unit.active ? 'Active' : 'Inactive' }}
-            </button>
-          </td>
-          <td class="align-right">
-            <button class="row-action" type="button" aria-label="Open unit actions">
-              <span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>
+            <button class="row-action" type="button" aria-label="Edit unit" (click)="openEditModal(unit)">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
             </button>
           </td>
         </tr>
 
-        <tr *ngIf="filteredUnits.length === 0">
-          <td colspan="6" class="empty-state">No units match the selected filters.</td>
+        <tr *ngIf="isLoading()">
+          <td colspan="4" class="empty-state">Loading units…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && units().length === 0">
+          <td colspan="4" class="empty-state">No units found.</td>
         </tr>
       </tbody>
     </table>
@@ -123,9 +83,9 @@
 </div>
 
 <div class="modal-backdrop" *ngIf="isModalOpen" role="dialog" aria-modal="true" aria-labelledby="new-unit-title">
-  <form class="modal" #unitForm="ngForm" (ngSubmit)="createUnit()">
+  <form class="modal" #unitForm="ngForm" (ngSubmit)="saveUnit()">
     <header class="modal-header">
-      <h3 id="new-unit-title">Create New Unit</h3>
+      <h3 id="new-unit-title">{{ isEditing ? 'Edit Unit' : 'Create New Unit' }}</h3>
       <button class="row-action" type="button" aria-label="Close modal" (click)="closeModal()">
         <span class="material-symbols-outlined" aria-hidden="true">close</span>
       </button>
@@ -143,51 +103,21 @@
         >
       </label>
 
-      <div class="modal-grid">
-        <label>
-          <span>Symbol</span>
-          <input
-            name="unitSymbol"
-            type="text"
-            placeholder="e.g., G"
-            required
-            [(ngModel)]="newUnit.symbol"
-          >
-        </label>
-
-        <label>
-          <span>Conversion Measure</span>
-          <input
-            name="unitMeasure"
-            type="number"
-            step="0.0001"
-            placeholder="1.0000"
-            [(ngModel)]="newUnit.measure"
-          >
-        </label>
-      </div>
-
       <label>
-        <span>Unit Group</span>
-        <select name="unitGroup" [(ngModel)]="newUnit.group">
-          <option>Weight</option>
-          <option>Volume</option>
-          <option>Count</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Status</span>
-        <select name="unitStatus" [(ngModel)]="newUnit.active">
-          <option [ngValue]="true">Active</option>
-          <option [ngValue]="false">Inactive</option>
-        </select>
+        <span>Symbol</span>
+        <input
+          name="unitSymbol"
+          type="text"
+          placeholder="e.g., g"
+          required
+          [(ngModel)]="newUnit.symbol"
+        >
       </label>
     </div>
 
     <footer class="modal-actions">
       <button class="secondary-action" type="button" (click)="closeModal()">Cancel</button>
-      <button class="primary-action" type="submit" [disabled]="unitForm.invalid">Create Unit</button>
+      <button class="primary-action" type="submit" [disabled]="unitForm.invalid">{{ isEditing ? 'Save Changes' : 'Create Unit' }}</button>
     </footer>
   </form>
 </div>

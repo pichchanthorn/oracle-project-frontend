@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CategoryService, CategoryApiModel } from '../../../services/category.service';
 
 interface InventoryCategory {
@@ -28,10 +28,10 @@ const ICON_MAP: Record<string, string> = {
 export class CategoryList implements OnInit {
   statusFilter: 'All Statuses' | 'Active Only' | 'Inactive Only' = 'Active Only';
   isModalOpen = false;
-  isLoading = false;
-  errorMessage = '';
+  isLoading = signal(false);
+  errorMessage = signal('');
 
-  categories: InventoryCategory[] = [];
+  categories = signal<InventoryCategory[]>([]);
 
   newCategory = {
     name: '',
@@ -46,18 +46,18 @@ export class CategoryList implements OnInit {
   }
 
   loadCategories(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
     this.categoryService.getAll().subscribe({
       next: (data) => {
-        this.categories = data.map((category) => this.toViewModel(category));
-        this.isLoading = false;
+        this.categories.set(data.map((category) => this.toViewModel(category)));
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to load categories', err);
-        this.errorMessage = 'Could not reach the API server. Is it running on http://localhost:3000?';
-        this.isLoading = false;
+        this.errorMessage.set('Could not reach the API server. Is it running on http://localhost:3000?');
+        this.isLoading.set(false);
       }
     });
   }
@@ -74,7 +74,7 @@ export class CategoryList implements OnInit {
   }
 
   get filteredCategories(): InventoryCategory[] {
-    return this.categories.filter((category) => {
+    return this.categories().filter((category) => {
       return (
         this.statusFilter === 'All Statuses' ||
         (this.statusFilter === 'Active Only' && category.active) ||
@@ -84,11 +84,11 @@ export class CategoryList implements OnInit {
   }
 
   get activeCategoryCount(): number {
-    return this.categories.filter((category) => category.active).length;
+    return this.categories().filter((category) => category.active).length;
   }
 
   get totalItemCount(): number {
-    return this.categories.reduce((sum, category) => sum + category.itemCount, 0);
+    return this.categories().reduce((sum, category) => sum + category.itemCount, 0);
   }
 
   openModal(): void {
@@ -101,13 +101,20 @@ export class CategoryList implements OnInit {
 
   toggleCategoryStatus(category: InventoryCategory): void {
     const previous = category.active;
-    category.active = !category.active; // optimistic UI update
+
+    // optimistic UI update
+    this.categories.update((categories) =>
+      categories.map((c) => (c.id === category.id ? { ...c, active: !previous } : c))
+    );
 
     this.categoryService.toggleStatus(category.id).subscribe({
       error: (err) => {
         console.error('Failed to toggle category', err);
-        category.active = previous; // revert on failure
-        this.errorMessage = 'Could not update category status.';
+        // revert on failure
+        this.categories.update((categories) =>
+          categories.map((c) => (c.id === category.id ? { ...c, active: previous } : c))
+        );
+        this.errorMessage.set('Could not update category status.');
       }
     });
   }
@@ -131,7 +138,7 @@ export class CategoryList implements OnInit {
         },
         error: (err) => {
           console.error('Failed to create category', err);
-          this.errorMessage = 'Could not create category.';
+          this.errorMessage.set('Could not create category.');
         }
       });
   }

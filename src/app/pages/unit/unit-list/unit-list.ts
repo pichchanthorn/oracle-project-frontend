@@ -1,13 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { UnitService, UnitApiModel } from '../../../services/unit.service';
 
 interface InventoryUnit {
   id: number;
   name: string;
   symbol: string;
-  measure: number;
-  group: 'Weight' | 'Volume' | 'Count';
-  description: string;
-  active: boolean;
 }
 
 @Component({
@@ -16,44 +13,64 @@ interface InventoryUnit {
   templateUrl: './unit-list.html',
   styleUrl: './unit-list.css',
 })
-export class UnitList {
-  statusFilter: 'All Statuses' | 'Active Only' | 'Inactive Only' = 'Active Only';
-  groupFilter: 'All Types' | InventoryUnit['group'] = 'All Types';
+export class UnitList implements OnInit {
   isModalOpen = false;
+  isLoading = signal(false);
+  errorMessage = signal('');
 
-  units: InventoryUnit[] = [
-    { id: 1, name: 'Carat', symbol: 'CT', measure: 1, group: 'Weight', description: 'Weight Metric', active: true },
-    { id: 2, name: 'Pound', symbol: 'LB', measure: 1, group: 'Weight', description: 'Weight Imperial', active: true },
-    { id: 3, name: 'Liter', symbol: 'LI', measure: 1, group: 'Volume', description: 'Volume Metric', active: true },
-    { id: 4, name: 'Piece', symbol: 'PC', measure: 1, group: 'Count', description: 'Unit Count', active: true }
-  ];
+  editingUnitId: number | null = null;
+
+  units = signal<InventoryUnit[]>([]);
 
   newUnit = {
     name: '',
-    symbol: '',
-    measure: 1,
-    group: 'Weight' as InventoryUnit['group'],
-    active: true
+    symbol: ''
   };
 
-  get filteredUnits(): InventoryUnit[] {
-    return this.units.filter((unit) => {
-      const statusMatches =
-        this.statusFilter === 'All Statuses' ||
-        (this.statusFilter === 'Active Only' && unit.active) ||
-        (this.statusFilter === 'Inactive Only' && !unit.active);
+  constructor(private unitService: UnitService) {}
 
-      const groupMatches = this.groupFilter === 'All Types' || unit.group === this.groupFilter;
+  ngOnInit(): void {
+    this.loadUnits();
+  }
 
-      return statusMatches && groupMatches;
+  loadUnits(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.unitService.getAll().subscribe({
+      next: (data) => {
+        this.units.set(data.map((unit) => this.toViewModel(unit)));
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load units', err);
+        this.errorMessage.set('Could not reach the API server. Is it running on http://localhost:3000?');
+        this.isLoading.set(false);
+      }
     });
   }
 
-  get activeUnitCount(): number {
-    return this.units.filter((unit) => unit.active).length;
+  private toViewModel(unit: UnitApiModel): InventoryUnit {
+    return {
+      id: unit.id,
+      name: unit.name,
+      symbol: unit.symbol
+    };
+  }
+
+  get isEditing(): boolean {
+    return this.editingUnitId !== null;
   }
 
   openModal(): void {
+    this.editingUnitId = null;
+    this.newUnit = { name: '', symbol: '' };
+    this.isModalOpen = true;
+  }
+
+  openEditModal(unit: InventoryUnit): void {
+    this.editingUnitId = unit.id;
+    this.newUnit = { name: unit.name, symbol: unit.symbol };
     this.isModalOpen = true;
   }
 
@@ -61,42 +78,40 @@ export class UnitList {
     this.isModalOpen = false;
   }
 
-  toggleUnitStatus(unit: InventoryUnit): void {
-    unit.active = !unit.active;
-  }
-
-  createUnit(): void {
+  saveUnit(): void {
     if (!this.newUnit.name.trim() || !this.newUnit.symbol.trim()) {
       return;
     }
 
-    const name = this.newUnit.name.trim();
-
-    this.units = [
-      ...this.units,
-      {
-        id: this.units.length + 1,
-        name,
-        symbol: this.newUnit.symbol.trim().toUpperCase(),
-        measure: Number(this.newUnit.measure) || 1,
-        group: this.newUnit.group,
-        description: `${this.newUnit.group} Standard`,
-        active: this.newUnit.active
-      }
-    ];
-
-    this.newUnit = {
-      name: '',
-      symbol: '',
-      measure: 1,
-      group: 'Weight',
-      active: true
+    const payload = {
+      name: this.newUnit.name.trim(),
+      symbol: this.newUnit.symbol.trim()
     };
-    this.closeModal();
-  }
 
-  formatMeasure(measure: number): string {
-    return measure.toFixed(4);
+    if (this.editingUnitId !== null) {
+      this.unitService.update(this.editingUnitId, payload).subscribe({
+        next: () => {
+          this.loadUnits();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Failed to update unit', err);
+          this.errorMessage.set('Could not update unit.');
+        }
+      });
+      return;
+    }
+
+    this.unitService.create(payload).subscribe({
+      next: () => {
+        this.loadUnits();
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Failed to create unit', err);
+        this.errorMessage.set('Could not create unit.');
+      }
+    });
   }
 
   trackByUnitId(_: number, unit: InventoryUnit): number {
