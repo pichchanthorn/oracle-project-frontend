@@ -39,14 +39,19 @@ export class AppSidebar implements OnInit {
     children: [
       { icon: 'straighten', label: 'Unit', route: '/units' },
       { icon: 'category', label: 'Category', route: '/categories' },
-      { icon: 'diamond', label: 'Ingredient', route: '/ingredients' }
+      { icon: 'diamond', label: 'Ingredient', route: '/ingredients' },
+      { icon: 'inventory_2', label: 'Product', route: '/products' }
     ]
   };
 
   constructor(private readonly router: Router) {}
 
   get isSettingsRoute(): boolean {
-    return this.router.url === '/units' || this.router.url === '/categories';
+    return (
+      this.router.url === '/units' ||
+      this.router.url === '/categories' ||
+      this.router.url === '/products'
+    );
   }
 
   ngOnInit(): void {

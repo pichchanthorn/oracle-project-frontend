@@ -6,6 +6,7 @@ import { Dashboard } from './pages/dashboard/dashboard/dashboard';
 import { UnitList } from './pages/unit/unit-list/unit-list';
 import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
+import { ProductList } from './pages/product/product-list/product-list';
 
 const routes: Routes = [
   {
@@ -49,6 +50,16 @@ const routes: Routes = [
       {
         path: '',
         component: IngredientList
+      }
+    ]
+  },
+  {
+    path: 'products',
+    component: AppLayout,
+    children: [
+      {
+        path: '',
+        component: ProductList
       }
     ]
   },

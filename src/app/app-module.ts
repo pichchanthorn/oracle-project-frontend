@@ -12,6 +12,7 @@ import { Dashboard } from './pages/dashboard/dashboard/dashboard';
 import { UnitList } from './pages/unit/unit-list/unit-list';
 import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
+import { ProductList } from './pages/product/product-list/product-list';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -28,6 +29,7 @@ import { HttpClientModule } from '@angular/common/http';
     UnitList,
     CategoryList,
     IngredientList,
+    ProductList,
   ],
   imports: [
     BrowserModule, 

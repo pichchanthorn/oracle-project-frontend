@@ -1,0 +1,173 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <strong>Products</strong>
+      </nav>
+      <h2>Product Management</h2>
+      <p>Manage the catalog of items available for sale.</p>
+    </div>
+
+    <div class="page-actions">
+      <button class="primary-action" type="button" (click)="openModal()">Add New Product</button>
+    </div>
+  </header>
+
+  <p *ngIf="errorMessage()" style="color:#dc2626; margin: 0 0 12px;">{{ errorMessage() }}</p>
+
+  <section class="summary-strip" aria-label="Product summary">
+    <article>
+      <span>Total Products</span>
+      <strong>{{ products().length }}</strong>
+    </article>
+  </section>
+
+  <section class="filter-bar" aria-label="Product filters">
+    <p>
+      Showing <strong>{{ products().length }}</strong> products
+    </p>
+  </section>
+
+  <section class="data-card" aria-label="Product data grid">
+    <table>
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>SKU</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Unit</th>
+          <th>Unit Price</th>
+          <th class="align-right">Status</th>
+          <th class="align-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products(); let index = index; trackBy: trackByProductId">
+          <td class="row-number">{{ (index + 1).toString().padStart(2, '0') }}</td>
+          <td class="unit-symbol">{{ product.sku }}</td>
+          <td>
+            <div class="unit-name">
+              <strong>{{ product.name }}</strong>
+            </div>
+          </td>
+          <td>{{ product.categoryName }}</td>
+          <td>{{ product.unitName }}</td>
+          <td class="measure">{{ product.unitPrice }}</td>
+          <td class="align-right">
+            <span class="status-pill" [class.inactive]="!product.active">
+              <span aria-hidden="true"></span>
+              {{ product.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="align-right">
+            <button class="row-action" type="button" aria-label="Edit product" (click)="openEditModal(product)">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="isLoading()">
+          <td colspan="8" class="empty-state">Loading products…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && products().length === 0">
+          <td colspan="8" class="empty-state">No products found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="isModalOpen" role="dialog" aria-modal="true" aria-labelledby="new-product-title">
+  <form class="modal" #productForm="ngForm" (ngSubmit)="saveProduct()">
+    <header class="modal-header">
+      <h3 id="new-product-title">{{ isEditing ? 'Edit Product' : 'Create New Product' }}</h3>
+      <button class="row-action" type="button" aria-label="Close modal" (click)="closeModal()">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <label>
+        <span>SKU</span>
+        <input
+          name="productSku"
+          type="text"
+          placeholder="e.g., DIA-0001"
+          required
+          [(ngModel)]="newProduct.sku"
+        >
+      </label>
+
+      <label>
+        <span>Product Name</span>
+        <input
+          name="productName"
+          type="text"
+          placeholder="e.g., Round Brilliant Diamond"
+          required
+          [(ngModel)]="newProduct.name"
+        >
+      </label>
+
+      <div class="modal-grid">
+        <label>
+          <span>Category</span>
+          <select name="productCategory" required [(ngModel)]="newProduct.categoryId">
+            <option [ngValue]="null" disabled>Select category</option>
+            <option *ngFor="let category of categories()" [ngValue]="category.id">{{ category.name }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Unit</span>
+          <select name="productUnit" required [(ngModel)]="newProduct.unitId">
+            <option [ngValue]="null" disabled>Select unit</option>
+            <option *ngFor="let unit of units()" [ngValue]="unit.id">{{ unit.name }}</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        <span>Unit Price</span>
+        <input
+          name="productUnitPrice"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+          required
+          [(ngModel)]="newProduct.unitPrice"
+        >
+      </label>
+
+      <label>
+        <span>Description</span>
+        <input
+          name="productDescription"
+          type="text"
+          placeholder="Optional description"
+          [(ngModel)]="newProduct.description"
+        >
+      </label>
+
+      <label>
+        <span>Status</span>
+        <select name="productStatus" [(ngModel)]="newProduct.active">
+          <option [ngValue]="true">Active</option>
+          <option [ngValue]="false">Inactive</option>
+        </select>
+      </label>
+    </div>
+
+    <footer class="modal-actions">
+      <button class="secondary-action" type="button" (click)="closeModal()">Cancel</button>
+      <button class="primary-action" type="submit" [disabled]="productForm.invalid">{{ isEditing ? 'Save Changes' : 'Create Product' }}</button>
+    </footer>
+  </form>
+</div>
