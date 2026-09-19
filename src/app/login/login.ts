@@ -1,8 +1,11 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren, signal } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
-type LoginField = 'associateId' | 'password';
+import { AuthService } from '../auth.service';
+
+type LoginField = 'username' | 'password';
 type LoginStep = 'credentials' | 'verification' | 'complete';
 
 @Component({
@@ -12,14 +15,13 @@ type LoginStep = 'credentials' | 'verification' | 'complete';
   styleUrl: './login.css',
 })
 export class Login {
-  
+
   @ViewChildren('otpInput') private otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   readonly terminalName = 'Terminal 01';
-  readonly maskedDevice = '•••• 88';
 
   credentials = {
-    associateId: '',
+    username: '',
     password: '',
     rememberTerminal: false
   };
@@ -32,9 +34,16 @@ export class Login {
   accessGranted = false;
   otpTouched = false;
   otpDigits = ['', '', '', '', '', ''];
-  resendMessage = '';
+  loginError = signal('');
+  otpError = signal('');
 
-  constructor(private readonly router: Router) {}
+  // The 2FA challenge token is intentionally kept as a plain in-memory field
+  // and nothing else — it is never written to localStorage/sessionStorage,
+  // never passed to AuthService for persistence, and is dropped as soon as
+  // the user signs in with a different account or navigates away.
+  private challengeToken: string | null = null;
+
+  constructor(private readonly router: Router, private readonly authService: AuthService) {}
 
   get isVerificationStep(): boolean {
     return this.currentStep === 'verification' || this.currentStep === 'complete';
@@ -81,11 +90,35 @@ export class Login {
   }
 
   signIn(form: NgForm): void {
+    this.loginError.set('');
+
     if (form.invalid) {
       form.control.markAllAsTouched();
+      return;
     }
 
-    this.goToVerification();
+    if (this.isAuthenticating) {
+      return;
+    }
+
+    this.isAuthenticating = true;
+
+    this.authService.login(this.credentials.username, this.credentials.password).subscribe({
+      next: (response) => {
+        this.isAuthenticating = false;
+
+        if (response.requiresTwoFactor) {
+          this.challengeToken = response.challengeToken;
+          this.goToVerification();
+        } else {
+          void this.router.navigate(['/dashboard']);
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isAuthenticating = false;
+        this.loginError.set(this.describeLoginError(err));
+      }
+    });
   }
 
   goToVerification(): void {
@@ -97,22 +130,36 @@ export class Login {
 
   verifyOtp(): void {
     this.otpTouched = true;
+    this.otpError.set('');
 
     if (!this.isOtpComplete || this.isVerifying || this.accessGranted) {
       this.focusFirstEmptyOtp();
       return;
     }
 
+    if (!this.challengeToken) {
+      this.otpError.set('Your session has expired. Please sign in again.');
+      return;
+    }
+
     this.isVerifying = true;
 
-    window.setTimeout(() => {
-      this.isVerifying = false;
-      this.accessGranted = true;
-      this.currentStep = 'complete';
-      window.setTimeout(() => {
-        void this.router.navigate(['/dashboard']);
-      }, 500);
-    }, 1200);
+    const code = this.otpDigits.join('');
+
+    this.authService.verifyLogin(this.challengeToken, code).subscribe({
+      next: () => {
+        this.isVerifying = false;
+        this.accessGranted = true;
+        this.currentStep = 'complete';
+        window.setTimeout(() => {
+          void this.router.navigate(['/dashboard']);
+        }, 500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isVerifying = false;
+        this.otpError.set(this.describeVerifyError(err));
+      }
+    });
   }
 
   handleOtpInput(event: Event, index: number): void {
@@ -121,7 +168,7 @@ export class Login {
 
     this.otpDigits[index] = digit;
     input.value = digit;
-    this.resendMessage = '';
+    this.otpError.set('');
 
     if (digit && index < this.otpDigits.length - 1) {
       this.focusOtpInput(index + 1);
@@ -154,25 +201,17 @@ export class Login {
     this.focusOtpInput(Math.min(digits.length, this.otpDigits.length) - 1);
   }
 
-  resendCode(): void {
-    if (this.isVerifying) {
-      return;
-    }
-
-    this.resetOtp();
-    this.resendMessage = `A fresh code was sent to ${this.maskedDevice}.`;
-    this.focusOtpInput(0);
-  }
-
   useDifferentAccount(): void {
     this.credentials = {
-      associateId: '',
+      username: '',
       password: '',
       rememberTerminal: false
     };
     this.showPassword = false;
     this.isAuthenticating = false;
     this.accessGranted = false;
+    this.loginError.set('');
+    this.challengeToken = null;
     this.currentStep = 'credentials';
     this.resetOtp();
   }
@@ -181,9 +220,42 @@ export class Login {
     return index;
   }
 
+  private describeLoginError(err: HttpErrorResponse): string {
+    switch (err.status) {
+      case 400:
+        return 'Please enter your username and password.';
+      case 401:
+        return 'Invalid username or password.';
+      case 423:
+        return 'This account is locked. Please try again later.';
+      case 500:
+        return 'A server error occurred. Please try again shortly.';
+      case 0:
+        return 'Could not reach the server. Check your connection and try again.';
+      default:
+        return 'Unable to sign in right now. Please try again.';
+    }
+  }
+
+  private describeVerifyError(err: HttpErrorResponse): string {
+    switch (err.status) {
+      case 400:
+        return 'Invalid verification code. Please try again.';
+      case 401:
+        return 'Your session has expired. Please sign in again.';
+      case 500:
+        return 'A server error occurred. Please try again shortly.';
+      case 0:
+        return 'Could not reach the server. Check your connection and try again.';
+      default:
+        return 'Unable to verify the code right now. Please try again.';
+    }
+  }
+
   private resetOtp(): void {
     this.otpDigits = ['', '', '', '', '', ''];
     this.otpTouched = false;
+    this.otpError.set('');
     this.isVerifying = false;
   }
 
@@ -198,4 +270,3 @@ export class Login {
     });
   }
 }
-

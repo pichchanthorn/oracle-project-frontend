@@ -86,27 +86,27 @@
         <form #loginForm="ngForm" class="login-form" novalidate (ngSubmit)="signIn(loginForm)">
           <div
             class="form-field"
-            [class.field-focused]="focusedField === 'associateId'"
-            [class.field-invalid]="associateId.invalid && associateId.touched"
+            [class.field-focused]="focusedField === 'username'"
+            [class.field-invalid]="username.invalid && username.touched"
           >
-            <label for="associate-id">Associate ID or Email</label>
+            <label for="username">Username</label>
             <div class="input-row">
               <span class="material-symbols-outlined" aria-hidden="true">badge</span>
               <input
-                #associateId="ngModel"
-                id="associate-id"
-                name="associateId"
+                #username="ngModel"
+                id="username"
+                name="username"
                 type="text"
-                placeholder="E.g. AD-992384"
+                placeholder="E.g. jdoe"
                 required
                 autocomplete="username"
-                [(ngModel)]="credentials.associateId"
-                (focus)="setFocusedField('associateId')"
+                [(ngModel)]="credentials.username"
+                (focus)="setFocusedField('username')"
                 (blur)="setFocusedField(null)"
               >
             </div>
-            <p class="field-error" *ngIf="associateId.invalid && associateId.touched">
-              Associate ID is required.
+            <p class="field-error" *ngIf="username.invalid && username.touched">
+              Username is required.
             </p>
           </div>
 
@@ -157,6 +157,8 @@
             <span>Remember this terminal</span>
           </label>
 
+          <p class="field-error login-error" *ngIf="loginError()">{{ loginError() }}</p>
+
           <button
             class="submit-button"
             type="button"
@@ -200,8 +202,7 @@
         <header class="verification-header">
           <h2>Two-Factor Verification</h2>
           <p>
-            We've sent a 6-digit code to your registered mobile device ending in
-            <strong>{{ maskedDevice }}</strong>. Enter it below to secure your session.
+            Open your authenticator app and enter the current 6-digit code to secure your session.
           </p>
         </header>
 
@@ -229,7 +230,7 @@
             Enter the 6-digit verification code.
           </p>
 
-          <p class="resend-message" *ngIf="resendMessage">{{ resendMessage }}</p>
+          <p class="field-error otp-error" *ngIf="otpError()">{{ otpError() }}</p>
 
           <div class="otp-actions">
             <button
@@ -257,10 +258,6 @@
             </button>
 
             <div class="verification-links">
-              <button class="resend-button" type="button" [disabled]="isVerifying" (click)="resendCode()">
-                <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
-                Resend Code
-              </button>
               <button class="different-account-button" type="button" (click)="useDifferentAccount()">
                 Sign in with a different account
               </button>
