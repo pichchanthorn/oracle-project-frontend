@@ -1,0 +1,142 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Administration</span>
+        <span>/</span>
+        <strong>Users</strong>
+      </nav>
+      <h2>User Management</h2>
+      <p>Manage associate, manager, and administrator accounts for this store.</p>
+    </div>
+  </header>
+
+  <section class="summary-strip" aria-label="User summary">
+    <article>
+      <span>Total Users</span>
+      <strong>{{ totalCount }}</strong>
+    </article>
+  </section>
+
+  <section class="filter-bar" aria-label="User filters">
+    <div class="filter-controls">
+      <label class="search-field">
+        <span>Search</span>
+        <div class="search-input">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input
+            name="userSearch"
+            type="text"
+            placeholder="Search by username or full name"
+            [(ngModel)]="searchTerm"
+          >
+        </div>
+      </label>
+
+      <div class="filter-divider"></div>
+
+      <label>
+        <span>Role</span>
+        <select name="roleFilter" [(ngModel)]="roleFilter">
+          <option value="ALL">All</option>
+          <option value="ADMIN">Admin</option>
+          <option value="MANAGER">Manager</option>
+          <option value="ASSOCIATE">Associate</option>
+        </select>
+      </label>
+
+      <div class="filter-divider"></div>
+
+      <label>
+        <span>Status</span>
+        <select name="statusFilter" [(ngModel)]="statusFilter">
+          <option value="ALL">All</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </label>
+
+      <button
+        class="secondary-action"
+        type="button"
+        [disabled]="!hasActiveFilters"
+        (click)="resetFilters()"
+      >
+        Clear Filters
+      </button>
+    </div>
+
+    <p>
+      Showing <strong>{{ filteredUsers.length }}</strong> of <strong>{{ totalCount }}</strong> users
+    </p>
+  </section>
+
+  <p class="load-error" *ngIf="errorMessage()">
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    {{ errorMessage() }}
+  </p>
+
+  <section class="data-card" aria-label="User data grid">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>2FA</th>
+          <th class="align-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading()">
+          <td colspan="7" class="empty-state">Loading users…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && errorMessage()">
+          <td colspan="7" class="empty-state">Unable to display users.</td>
+        </tr>
+
+        <ng-container *ngIf="!isLoading() && !errorMessage()">
+          <tr *ngFor="let user of filteredUsers; trackBy: trackByUserId">
+            <td class="unit-symbol">{{ user.username }}</td>
+            <td>
+              <div class="unit-name">
+                <strong>{{ user.fullName }}</strong>
+              </div>
+            </td>
+            <td class="measure">{{ user.email || '—' }}</td>
+            <td>
+              <span class="role-pill" [attr.data-role]="user.role">{{ user.role }}</span>
+            </td>
+            <td>
+              <span class="status-pill" [class.inactive]="!user.isActive">
+                <span aria-hidden="true"></span>
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <span class="twofa-pill" [class.enabled]="user.twoFactorEnabled">
+                {{ user.twoFactorEnabled ? 'On' : 'Off' }}
+              </span>
+            </td>
+            <td class="align-right">
+              <button class="row-action" type="button" aria-label="User actions" disabled>
+                <span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="totalCount === 0">
+            <td colspan="7" class="empty-state">No users found.</td>
+          </tr>
+
+          <tr *ngIf="totalCount > 0 && filteredUsers.length === 0">
+            <td colspan="7" class="empty-state">No users match the selected filters.</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </section>
+</div>
