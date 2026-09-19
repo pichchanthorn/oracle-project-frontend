@@ -8,7 +8,9 @@ import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
 import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
+import { Forbidden } from './pages/forbidden/forbidden';
 import { authGuard } from './guards/auth.guard';
+import { pageAccessGuard } from './guards/page-access.guard';
 
 const routes: Routes = [
   {
@@ -16,9 +18,15 @@ const routes: Routes = [
     component: Login
   },
   {
+    path: 'forbidden',
+    component: Forbidden,
+    canActivate: [authGuard]
+  },
+  {
     path: 'dashboard',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'DASHBOARD' },
     children: [
       {
         path: '',
@@ -29,7 +37,8 @@ const routes: Routes = [
   {
     path: 'units',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'UNITS' },
     children: [
       {
         path: '',
@@ -40,7 +49,8 @@ const routes: Routes = [
   {
     path: 'categories',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'CATEGORIES' },
     children: [
       {
         path: '',
@@ -51,7 +61,8 @@ const routes: Routes = [
   {
     path: 'ingredients',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'INGREDIENTS' },
     children: [
       {
         path: '',
@@ -62,7 +73,8 @@ const routes: Routes = [
   {
     path: 'products',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'PRODUCTS' },
     children: [
       {
         path: '',
@@ -73,7 +85,8 @@ const routes: Routes = [
   {
     path: 'users',
     component: AppLayout,
-    canActivate: [authGuard],
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'USERS' },
     children: [
       {
         path: '',

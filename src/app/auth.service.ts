@@ -2,12 +2,19 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
+// Mirrors the backend's user.role values (see services/user.service.ts's
+// UserRole). Kept as a separate local alias rather than importing from
+// user.service.ts so AuthService has no dependency on the user-management
+// feature — this is the auth foundation's own view of "what role strings
+// the backend can send us at login time".
+export type AuthRole = 'ADMIN' | 'MANAGER' | 'ASSOCIATE';
+
 export interface AuthUser {
   id: number;
   username: string;
   fullName: string;
   email: string;
-  role: string;
+  role: AuthRole;
 }
 
 export interface LoginSuccessResponse {
@@ -42,6 +49,13 @@ export class AuthService {
 
   private readonly accessTokenKey = 'lumina-access-token';
 
+  // Stored alongside the access token purely so the frontend page-access
+  // layer (PageAccessService) has a real role to check instead of nothing —
+  // it is NOT used for authentication decisions, never decoded from the JWT,
+  // and is not itself treated as proof of anything the backend hasn't
+  // already verified. Backend authorization remains authoritative.
+  private readonly roleKey = 'lumina-user-role';
+
   // Mirrors whatever is currently in storage so route guards/UI can react
   // to auth state with a signal instead of re-reading storage each time.
   private readonly authenticated = signal(this.hasStoredAccessToken());
@@ -59,7 +73,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password }).pipe(
       tap((response) => {
         if (!response.requiresTwoFactor) {
-          this.setAccessToken(response.accessToken);
+          this.setAccessToken(response.accessToken, response.user.role);
         }
       })
     );
@@ -74,7 +88,7 @@ export class AuthService {
       .post<VerifyLoginResponse>(`${this.apiUrl}/verify-login`, { challengeToken, twoFactorCode })
       .pipe(
         tap((response) => {
-          this.setAccessToken(response.accessToken);
+          this.setAccessToken(response.accessToken, response.user.role);
         })
       );
   }
@@ -97,13 +111,28 @@ export class AuthService {
     return window.localStorage.getItem(this.accessTokenKey);
   }
 
-  private setAccessToken(accessToken: string): void {
+  /**
+   * The signed-in user's role, or null if unauthenticated. This is the value
+   * the backend returned at login time — never decoded from the JWT — and
+   * exists solely so the frontend page-access layer has something real to
+   * check. It carries no authority of its own; the backend still enforces
+   * every actual permission decision.
+   */
+  getCurrentRole(): AuthRole | null {
+    if (!this.canUseStorage()) {
+      return null;
+    }
+    return window.localStorage.getItem(this.roleKey) as AuthRole | null;
+  }
+
+  private setAccessToken(accessToken: string, role: AuthRole): void {
     this.authenticated.set(true);
 
     if (!this.canUseStorage()) {
       return;
     }
     window.localStorage.setItem(this.accessTokenKey, accessToken);
+    window.localStorage.setItem(this.roleKey, role);
   }
 
   private clearAccessToken(): void {
@@ -113,6 +142,7 @@ export class AuthService {
       return;
     }
     window.localStorage.removeItem(this.accessTokenKey);
+    window.localStorage.removeItem(this.roleKey);
   }
 
   private hasStoredAccessToken(): boolean {
