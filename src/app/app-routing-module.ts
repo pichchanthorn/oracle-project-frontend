@@ -8,6 +8,7 @@ import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
 import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
+import { authGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
@@ -17,6 +18,7 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -27,6 +29,7 @@ const routes: Routes = [
   {
     path: 'units',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -37,6 +40,7 @@ const routes: Routes = [
   {
     path: 'categories',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -47,6 +51,7 @@ const routes: Routes = [
   {
     path: 'ingredients',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -57,6 +62,7 @@ const routes: Routes = [
   {
     path: 'products',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -67,6 +73,7 @@ const routes: Routes = [
   {
     path: 'users',
     component: AppLayout,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
