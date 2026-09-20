@@ -23,6 +23,7 @@
       *ngFor="let item of navItems"
       class="nav-item"
       [class.disabled]="!item.route"
+      [hidden]="!canView(item)"
       routerLinkActive="active"
       [routerLinkActiveOptions]="{ exact: true }"
       [routerLink]="item.route || null"
@@ -57,6 +58,7 @@
         <p>{{ settingsGroup.label }}</p>
         <a
           *ngFor="let child of settingsGroup.children"
+          [hidden]="!canView(child)"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="child.route"
@@ -70,6 +72,7 @@
         <a
           *ngFor="let child of settingsGroup.children"
           class="nav-item child-item"
+          [hidden]="!canView(child)"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="child.route"
