@@ -47,6 +47,7 @@ export class AppSidebar implements OnInit {
       { icon: 'category', label: 'Category', route: '/categories', pageCode: 'CATEGORIES' },
       { icon: 'diamond', label: 'Ingredient', route: '/ingredients', pageCode: 'INGREDIENTS' },
       { icon: 'inventory_2', label: 'Product', route: '/products', pageCode: 'PRODUCTS' },
+      { icon: 'inventory', label: 'Inventory', route: '/inventory', pageCode: 'INVENTORY' },
       { icon: 'manage_accounts', label: 'User Management', route: '/users', pageCode: 'USERS' }
     ]
   };
@@ -62,6 +63,7 @@ export class AppSidebar implements OnInit {
       this.router.url === '/categories' ||
       this.router.url === '/ingredients' ||
       this.router.url === '/products' ||
+      this.router.url === '/inventory' ||
       this.router.url === '/users'
     );
   }

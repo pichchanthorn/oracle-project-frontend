@@ -11,7 +11,7 @@ import { AuthRole, AuthService } from '../auth.service';
  * Naming convention: uppercase, singular concept per page, one entry per
  * protected route. Add new codes here as new protected pages are added.
  */
-export type PageCode = 'DASHBOARD' | 'UNITS' | 'CATEGORIES' | 'INGREDIENTS' | 'PRODUCTS' | 'USERS';
+export type PageCode = 'DASHBOARD' | 'UNITS' | 'CATEGORIES' | 'INGREDIENTS' | 'PRODUCTS' | 'USERS' | 'INVENTORY';
 
 /**
  * PageAccessService — the single frontend abstraction that answers
@@ -49,6 +49,7 @@ export class PageAccessService {
     INGREDIENTS: ['ADMIN', 'MANAGER', 'ASSOCIATE'],
     PRODUCTS: ['ADMIN', 'MANAGER', 'ASSOCIATE'],
     USERS: ['ADMIN', 'MANAGER'],
+    INVENTORY: ['ADMIN', 'MANAGER', 'ASSOCIATE'],
   };
 
   constructor(private readonly authService: AuthService) {}

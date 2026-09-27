@@ -8,6 +8,7 @@ import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
 import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
+import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
 import { authGuard } from './guards/auth.guard';
 import { pageAccessGuard } from './guards/page-access.guard';
@@ -91,6 +92,18 @@ const routes: Routes = [
       {
         path: '',
         component: UserList
+      }
+    ]
+  },
+  {
+    path: 'inventory',
+    component: AppLayout,
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'INVENTORY' },
+    children: [
+      {
+        path: '',
+        component: InventoryList
       }
     ]
   },

@@ -15,6 +15,7 @@ import { CategoryList } from './pages/category/category-list/category-list';
 import { IngredientList } from './pages/ingredient/ingredient-list/ingredient-list';
 import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
+import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -35,6 +36,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
     IngredientList,
     ProductList,
     UserList,
+    InventoryList,
     Forbidden,
   ],
   imports: [

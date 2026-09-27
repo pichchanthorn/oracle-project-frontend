@@ -1,0 +1,213 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Inventory</span>
+        <span>/</span>
+        <strong>Movements</strong>
+      </nav>
+      <h2>Inventory</h2>
+      <p>Track stock movements — restocks, adjustments, and returns — across the catalog.</p>
+    </div>
+
+    <div class="page-actions" *ngIf="canRecordMovement">
+      <button class="primary-action" type="button" (click)="openRecordMovementModal()">
+        <span class="material-symbols-outlined" aria-hidden="true">add_box</span>
+        Record Movement
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-strip" aria-label="Inventory summary">
+    <article>
+      <span>Movements Shown</span>
+      <strong>{{ totalCount }}</strong>
+    </article>
+    <article *ngIf="productFilter !== null">
+      <span>Selected Product Stock</span>
+      <strong *ngIf="!isLoadingStock() && selectedStock() !== null">{{ selectedStock() }}</strong>
+      <strong *ngIf="isLoadingStock()">…</strong>
+      <strong *ngIf="!isLoadingStock() && selectedStock() === null">—</strong>
+    </article>
+  </section>
+
+  <section class="filter-bar" aria-label="Inventory filters">
+    <div class="filter-controls">
+      <label>
+        <span>Product</span>
+        <select name="productFilter" [(ngModel)]="productFilter" (ngModelChange)="onProductFilterChange()">
+          <option [ngValue]="null">All Products</option>
+          <option *ngFor="let product of products()" [ngValue]="product.id">{{ product.name }}</option>
+        </select>
+      </label>
+
+      <div class="filter-divider"></div>
+
+      <label>
+        <span>Reason</span>
+        <select name="reasonFilter" [(ngModel)]="reasonFilter">
+          <option value="ALL">All</option>
+          <option value="RESTOCK">Restock</option>
+          <option value="ADJUSTMENT">Adjustment</option>
+          <option value="RETURN">Return</option>
+        </select>
+      </label>
+
+      <div class="filter-divider"></div>
+
+      <label>
+        <span>From</span>
+        <input type="date" name="fromFilter" [(ngModel)]="fromFilter">
+      </label>
+
+      <label>
+        <span>To</span>
+        <input type="date" name="toFilter" [(ngModel)]="toFilter">
+      </label>
+
+      <button class="secondary-action" type="button" (click)="applyFilters()">Apply</button>
+
+      <button
+        class="secondary-action"
+        type="button"
+        [disabled]="!hasActiveFilters"
+        (click)="resetFilters()"
+      >
+        Clear Filters
+      </button>
+    </div>
+
+    <p>
+      Showing <strong>{{ totalCount }}</strong> movement{{ totalCount === 1 ? '' : 's' }}
+    </p>
+  </section>
+
+  <p class="load-success" *ngIf="successMessage()">
+    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+    {{ successMessage() }}
+    <button class="dismiss-button" type="button" aria-label="Dismiss message" (click)="dismissSuccessMessage()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+  </p>
+
+  <p class="load-error" *ngIf="errorMessage()">
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    {{ errorMessage() }}
+  </p>
+
+  <section class="data-card" aria-label="Inventory movement grid">
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity Change</th>
+          <th>Reason</th>
+          <th>Changed By</th>
+          <th>Date/Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading()">
+          <td colspan="5" class="empty-state">Loading movements…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && errorMessage()">
+          <td colspan="5" class="empty-state">Unable to display movements.</td>
+        </tr>
+
+        <ng-container *ngIf="!isLoading() && !errorMessage()">
+          <tr *ngFor="let movement of movements(); trackBy: trackByMovementId">
+            <td>
+              <div class="unit-name">
+                <strong>{{ productName(movement.productId) }}</strong>
+              </div>
+            </td>
+            <td>
+              <span class="quantity-pill" [class.negative]="movement.quantityChange < 0">
+                {{ movement.quantityChange > 0 ? '+' : '' }}{{ movement.quantityChange }}
+              </span>
+            </td>
+            <td>
+              <span class="reason-pill" [attr.data-reason]="movement.reason">{{ movement.reason }}</span>
+            </td>
+            <td class="measure">#{{ movement.changedBy }}</td>
+            <td class="measure">{{ movement.changedAt }}</td>
+          </tr>
+
+          <tr *ngIf="totalCount === 0 && !hasActiveFilters">
+            <td colspan="5" class="empty-state">No inventory movements have been recorded yet.</td>
+          </tr>
+
+          <tr *ngIf="totalCount === 0 && hasActiveFilters">
+            <td colspan="5" class="empty-state">No movements match the selected filters.</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="pagination">
+    <p>Page rows <strong>{{ offset + 1 }}–{{ offset + totalCount }}</strong></p>
+    <div>
+      <button type="button" [disabled]="!canGoToPreviousPage" (click)="goToPreviousPage()">Previous</button>
+      <button type="button" [disabled]="!canGoToNextPage" (click)="goToNextPage()">Next</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal-backdrop" *ngIf="isFormOpen" role="dialog" aria-modal="true" aria-labelledby="movement-form-title">
+  <form class="modal" #movementForm="ngForm" novalidate (ngSubmit)="saveMovement()">
+    <header class="modal-header">
+      <h3 id="movement-form-title">Record Movement</h3>
+      <button class="row-action" type="button" aria-label="Close modal" (click)="closeForm()" [disabled]="isSaving()">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <p class="load-error modal-error" *ngIf="formError()">{{ formError() }}</p>
+
+      <label>
+        <span>Product</span>
+        <select name="movementProduct" required [(ngModel)]="formModel.productId">
+          <option [ngValue]="null" disabled>Select product</option>
+          <option *ngFor="let product of products()" [ngValue]="product.id">{{ product.name }}</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Reason</span>
+        <select name="movementReason" required [(ngModel)]="formModel.reason">
+          <option value="RESTOCK">Restock</option>
+          <option value="ADJUSTMENT">Adjustment</option>
+          <option value="RETURN">Return</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Quantity</span>
+        <input
+          name="movementQuantity"
+          type="number"
+          step="1"
+          [placeholder]="formModel.reason === 'ADJUSTMENT' ? 'e.g. 5 or -5' : 'e.g. 5'"
+          required
+          [(ngModel)]="formModel.quantityChange"
+        >
+        <p class="field-hint" *ngIf="formModel.reason === 'RESTOCK' || formModel.reason === 'RETURN'">
+          Must be a positive whole number.
+        </p>
+        <p class="field-hint" *ngIf="formModel.reason === 'ADJUSTMENT'">
+          Positive to increase stock, negative to decrease. Cannot be zero.
+        </p>
+      </label>
+    </div>
+
+    <footer class="modal-actions">
+      <button class="secondary-action" type="button" (click)="closeForm()" [disabled]="isSaving()">Cancel</button>
+      <button class="primary-action" type="submit" [disabled]="!isFormValid || isSaving()">
+        {{ isSaving() ? 'Saving…' : 'Record Movement' }}
+      </button>
+    </footer>
+  </form>
+</div>
