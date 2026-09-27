@@ -17,9 +17,9 @@ import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
 import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
+import { TwoFactorSetup } from './pages/two-factor-setup/two-factor-setup';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { authInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
@@ -38,13 +38,13 @@ import { authInterceptor } from './interceptors/auth.interceptor';
     UserList,
     InventoryList,
     Forbidden,
+    TwoFactorSetup,
   ],
   imports: [
-    BrowserModule, 
+    BrowserModule,
     AppRoutingModule,
     CommonModule,
-    FormsModule,
-    HttpClientModule
+    FormsModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

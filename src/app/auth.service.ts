@@ -36,6 +36,19 @@ export interface VerifyLoginResponse {
   user: AuthUser;
 }
 
+// Returned once by /2fa/setup. secret/otpAuthUri are sensitive setup
+// material (otpAuthUri embeds the plaintext secret) — callers must hold
+// these in memory only and never write them to storage or logs.
+export interface TwoFactorSetupResponse {
+  secret: string;
+  otpAuthUri: string;
+  qrCodeDataUrl: string;
+}
+
+export interface TwoFactorEnableResponse {
+  success: true;
+}
+
 // AuthService is the single frontend owner of authentication state: it is
 // the only place that talks to /api/auth/* and the only place that reads or
 // writes the stored access token. Other services/components must go through
@@ -91,6 +104,25 @@ export class AuthService {
           this.setAccessToken(response.accessToken, response.user.role);
         })
       );
+  }
+
+  /**
+   * First-time 2FA enrollment step 1: asks the backend to generate a pending
+   * TOTP secret for the current user and returns the QR/manual-entry
+   * material needed to add it to an authenticator app. Requires an existing
+   * access token; the interceptor attaches it, this method never does.
+   */
+  setupTwoFactor(): Observable<TwoFactorSetupResponse> {
+    return this.http.post<TwoFactorSetupResponse>(`${this.apiUrl}/2fa/setup`, {});
+  }
+
+  /**
+   * First-time 2FA enrollment step 2: confirms the pending secret from
+   * setupTwoFactor() by submitting the 6-digit code the authenticator app
+   * produced. On success, 2FA is enabled for this user going forward.
+   */
+  enableTwoFactor(code: string): Observable<TwoFactorEnableResponse> {
+    return this.http.post<TwoFactorEnableResponse>(`${this.apiUrl}/2fa/enable`, { code });
   }
 
   /** Clears the stored access token and returns the app to a logged-out state. */

@@ -1,0 +1,114 @@
+<main class="setup-shell">
+  <section class="setup-card" *ngIf="phase === 'loading'" role="status">
+    <span class="material-symbols-outlined spin setup-icon" aria-hidden="true">progress_activity</span>
+    <h2>Preparing Two-Factor Setup</h2>
+    <p class="setup-message">Generating your secure authentication key&hellip;</p>
+  </section>
+
+  <section class="setup-card" *ngIf="phase === 'already-enabled'" role="status">
+    <span class="material-symbols-outlined setup-icon success-icon" aria-hidden="true">verified_user</span>
+    <h2>Two-Factor Authentication Already Enabled</h2>
+    <p class="setup-message">
+      Your account is already protected with two-factor authentication. No further action is needed.
+    </p>
+    <button class="primary-action" type="button" (click)="goToDashboard()">
+      <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
+      Back to Dashboard
+    </button>
+  </section>
+
+  <section class="setup-card" *ngIf="phase === 'load-error'" role="alert">
+    <span class="material-symbols-outlined setup-icon error-icon" aria-hidden="true">error</span>
+    <h2>Unable to Start Setup</h2>
+    <p class="setup-message">{{ loadError() }}</p>
+    <button class="primary-action" type="button" (click)="fetchSetup()">
+      <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+      Try Again
+    </button>
+  </section>
+
+  <section class="setup-card setup-card-wide" *ngIf="phase === 'ready'">
+    <header class="setup-header">
+      <p class="eyebrow">Account Security</p>
+      <h2>Set Up Two-Factor Authentication</h2>
+      <p class="setup-message">
+        Add an extra layer of protection to your account using an authenticator app.
+      </p>
+    </header>
+
+    <ol class="setup-steps">
+      <li>
+        <span class="step-number">1</span>
+        Scan the QR code below with an authenticator app (e.g. Google Authenticator, Authy).
+      </li>
+      <li>
+        <span class="step-number">2</span>
+        Enter the 6-digit verification code the app generates.
+      </li>
+      <li>
+        <span class="step-number">3</span>
+        Submit the code to complete setup.
+      </li>
+    </ol>
+
+    <div class="qr-panel">
+      <div class="qr-frame">
+        <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="Two-factor authentication QR code" class="qr-image">
+      </div>
+
+      <div class="manual-secret" *ngIf="secret">
+        <span class="manual-secret-label">Can&rsquo;t scan the code? Enter this key manually:</span>
+        <code class="manual-secret-value">{{ secret }}</code>
+      </div>
+    </div>
+
+    <form class="otp-form" novalidate (ngSubmit)="submitEnable()">
+      <div class="otp-inputs" aria-label="Two-factor verification code">
+        <input
+          #otpInput
+          *ngFor="let digit of otpDigits; let index = index; trackBy: trackByIndex"
+          class="otp-input"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="1"
+          [value]="digit"
+          [disabled]="isVerifying"
+          [attr.autocomplete]="index === 0 ? 'one-time-code' : 'off'"
+          [attr.aria-label]="'Verification digit ' + (index + 1)"
+          (input)="handleOtpInput($event, index)"
+          (keydown)="handleOtpKeydown($event, index)"
+          (paste)="handleOtpPaste($event)"
+        >
+      </div>
+
+      <p class="field-error otp-error" *ngIf="otpTouched && !isOtpComplete">
+        Enter the 6-digit verification code.
+      </p>
+
+      <p class="field-error otp-error" *ngIf="otpError()">{{ otpError() }}</p>
+
+      <button
+        class="submit-button"
+        type="button"
+        (click)="submitEnable()"
+        [disabled]="isVerifying"
+      >
+        <span
+          class="material-symbols-outlined"
+          [class.spin]="isVerifying"
+          aria-hidden="true"
+        >
+          {{ isVerifying ? 'progress_activity' : 'verified_user' }}
+        </span>
+        {{ submitLabel }}
+      </button>
+    </form>
+  </section>
+
+  <section class="setup-card" *ngIf="phase === 'success'" role="status">
+    <span class="material-symbols-outlined setup-icon success-icon" aria-hidden="true">check_circle</span>
+    <h2>Two-Factor Authentication Enabled</h2>
+    <p class="setup-message">Your account is now protected. Redirecting to your dashboard&hellip;</p>
+  </section>
+</main>

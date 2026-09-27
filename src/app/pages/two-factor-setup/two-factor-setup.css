@@ -1,0 +1,251 @@
+.setup-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: var(--background);
+}
+
+.setup-card {
+  display: grid;
+  width: min(100%, 420px);
+  justify-items: center;
+  gap: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 44px 36px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.setup-card-wide {
+  width: min(100%, 560px);
+  justify-items: stretch;
+  text-align: left;
+}
+
+.setup-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--primary);
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.success-icon {
+  background: rgba(8, 127, 91, 0.12);
+  color: var(--success);
+}
+
+.error-icon {
+  background: rgba(186, 26, 26, 0.12);
+  color: var(--danger);
+}
+
+.setup-header {
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.setup-card h2 {
+  margin: 0;
+  color: var(--primary);
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
+.setup-card-wide h2 {
+  font-size: 1.9rem;
+}
+
+.setup-message {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.setup-steps {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.setup-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-number {
+  display: inline-grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.qr-panel {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.qr-frame {
+  display: grid;
+  width: 220px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.qr-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.manual-secret {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 100%;
+  text-align: center;
+}
+
+.manual-secret-label {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.manual-secret-value {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  padding: 8px 14px;
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+
+.otp-form {
+  display: grid;
+  gap: 20px;
+}
+
+.otp-inputs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 14px);
+}
+
+.otp-input {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--primary);
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.otp-input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 1px var(--primary);
+  outline: 0;
+}
+
+.otp-input:disabled {
+  opacity: 0.76;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.primary-action,
+.submit-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  padding: 0 24px;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.submit-button {
+  width: 100%;
+}
+
+.primary-action:hover:not(:disabled),
+.submit-button:hover:not(:disabled) {
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.primary-action:disabled,
+.submit-button:disabled {
+  opacity: 0.76;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

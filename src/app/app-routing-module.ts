@@ -10,6 +10,7 @@ import { ProductList } from './pages/product/product-list/product-list';
 import { UserList } from './pages/user/user-list/user-list';
 import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
+import { TwoFactorSetup } from './pages/two-factor-setup/two-factor-setup';
 import { authGuard } from './guards/auth.guard';
 import { pageAccessGuard } from './guards/page-access.guard';
 
@@ -21,6 +22,14 @@ const routes: Routes = [
   {
     path: 'forbidden',
     component: Forbidden,
+    canActivate: [authGuard]
+  },
+  {
+    // Personal account-security action, not a role-gated business page —
+    // deliberately outside PageAccessService's matrix (see its class doc).
+    // Any authenticated user may enroll in 2FA, so authGuard alone applies.
+    path: '2fa-setup',
+    component: TwoFactorSetup,
     canActivate: [authGuard]
   },
   {
