@@ -18,6 +18,7 @@ import { UserList } from './pages/user/user-list/user-list';
 import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
 import { TwoFactorSetup } from './pages/two-factor-setup/two-factor-setup';
+import { SalesPos } from './pages/sales/sales-pos/sales-pos';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { authInterceptor } from './interceptors/auth.interceptor';
@@ -39,6 +40,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
     InventoryList,
     Forbidden,
     TwoFactorSetup,
+    SalesPos,
   ],
   imports: [
     BrowserModule,

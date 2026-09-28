@@ -11,6 +11,7 @@ import { UserList } from './pages/user/user-list/user-list';
 import { InventoryList } from './pages/inventory/inventory-list/inventory-list';
 import { Forbidden } from './pages/forbidden/forbidden';
 import { TwoFactorSetup } from './pages/two-factor-setup/two-factor-setup';
+import { SalesPos } from './pages/sales/sales-pos/sales-pos';
 import { authGuard } from './guards/auth.guard';
 import { pageAccessGuard } from './guards/page-access.guard';
 
@@ -41,6 +42,18 @@ const routes: Routes = [
       {
         path: '',
         component: Dashboard
+      }
+    ]
+  },
+  {
+    path: 'sales',
+    component: AppLayout,
+    canActivate: [authGuard, pageAccessGuard],
+    data: { pageCode: 'SALES' },
+    children: [
+      {
+        path: '',
+        component: SalesPos
       }
     ]
   },

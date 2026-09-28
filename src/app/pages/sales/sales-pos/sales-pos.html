@@ -1,0 +1,140 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Sales</span>
+        <span>/</span>
+        <strong>Point of Sale</strong>
+      </nav>
+      <h2>Point of Sale</h2>
+      <p>Build a sale from active inventory and submit it for checkout.</p>
+    </div>
+  </header>
+
+  <p class="load-success" *ngIf="lastSale() as sale">
+    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+    Sale #{{ sale.sale.saleId }} completed — {{ sale.sale.totalAmount }} via {{ sale.sale.paymentMethod }}.
+    <button class="dismiss-button" type="button" aria-label="Dismiss message" (click)="dismissLastSale()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+  </p>
+
+  <p class="load-error" *ngIf="submitError()">
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    {{ submitError() }}
+    <button class="dismiss-button" type="button" aria-label="Dismiss message" (click)="dismissSubmitError()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+  </p>
+
+  <p class="load-error" *ngIf="loadError()">
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    {{ loadError() }}
+  </p>
+
+  <div class="pos-layout">
+    <section class="data-card pos-picker" aria-label="Product picker">
+      <div class="pos-picker-header">
+        <label class="pos-search">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input
+            type="search"
+            placeholder="Search by name or SKU…"
+            [value]="searchTerm()"
+            (input)="onSearchTermChange($any($event.target).value)"
+          >
+        </label>
+      </div>
+
+      <div class="pos-product-grid">
+        <p class="empty-state" *ngIf="isLoadingProducts()">Loading products…</p>
+
+        <p class="empty-state" *ngIf="!isLoadingProducts() && visibleProducts().length === 0">
+          No active products match your search.
+        </p>
+
+        <button
+          *ngFor="let product of visibleProducts(); trackBy: trackByProduct"
+          class="pos-product-card"
+          type="button"
+          (click)="addToCart(product)"
+        >
+          <span class="pos-product-name">{{ product.name }}</span>
+          <span class="pos-product-sku">{{ product.sku }}</span>
+          <span class="pos-product-price">{{ product.unitPrice }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="data-card pos-cart" aria-label="Current sale cart">
+      <header class="pos-cart-header">
+        <h3>Current Sale</h3>
+        <span class="status-pill" *ngIf="cartItemCount() > 0">{{ cartItemCount() }} item{{ cartItemCount() === 1 ? '' : 's' }}</span>
+      </header>
+
+      <div class="pos-cart-lines">
+        <p class="empty-state" *ngIf="cartLineList().length === 0">
+          Select a product to add it to the sale.
+        </p>
+
+        <div class="pos-cart-line" *ngFor="let line of cartLineList(); trackBy: trackByCartLine">
+          <div class="pos-cart-line-info">
+            <strong>{{ line.product.name }}</strong>
+            <span>{{ line.product.sku }}</span>
+          </div>
+
+          <div class="pos-cart-line-price">{{ line.product.unitPrice }}</div>
+
+          <div class="pos-quantity-controls">
+            <button type="button" aria-label="Decrease quantity" (click)="decreaseQuantity(line.product.id)">
+              <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+            </button>
+            <span class="pos-quantity-value">{{ line.quantity }}</span>
+            <button type="button" aria-label="Increase quantity" (click)="increaseQuantity(line.product.id)">
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            </button>
+          </div>
+
+          <div class="pos-cart-line-subtotal">{{ line.product.unitPrice * line.quantity }}</div>
+
+          <button
+            class="row-action"
+            type="button"
+            aria-label="Remove item"
+            (click)="removeLine(line.product.id)"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      </div>
+
+      <footer class="pos-cart-footer">
+        <label class="pos-payment-method">
+          <span>Payment Method</span>
+          <select
+            name="paymentMethod"
+            [ngModel]="selectedPaymentMethod()"
+            (ngModelChange)="selectedPaymentMethod.set($event)"
+          >
+            <option [ngValue]="null" disabled>Select payment method</option>
+            <option *ngFor="let method of paymentMethods" [ngValue]="method">{{ method }}</option>
+          </select>
+        </label>
+
+        <div class="pos-cart-total">
+          <span>Total (estimated)</span>
+          <strong>{{ cartSubtotal() }}</strong>
+        </div>
+
+        <button
+          class="primary-action pos-submit"
+          type="button"
+          [disabled]="!canSubmit()"
+          (click)="submitSale()"
+        >
+          {{ isSubmitting() ? 'Submitting…' : 'Submit Sale' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+</div>
