@@ -1,4 +1,4 @@
-import { Component, ElementRef, QueryList, ViewChildren, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, QueryList, ViewChildren, signal } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -43,7 +43,11 @@ export class Login {
   // the user signs in with a different account or navigates away.
   private challengeToken: string | null = null;
 
-  constructor(private readonly router: Router, private readonly authService: AuthService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   get isVerificationStep(): boolean {
     return this.currentStep === 'verification' || this.currentStep === 'complete';
@@ -113,10 +117,12 @@ export class Login {
         } else {
           void this.router.navigate(['/dashboard']);
         }
+        this.changeDetectorRef.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
         this.isAuthenticating = false;
         this.loginError.set(this.describeLoginError(err));
+        this.changeDetectorRef.markForCheck();
       }
     });
   }
@@ -154,10 +160,12 @@ export class Login {
         window.setTimeout(() => {
           void this.router.navigate(['/dashboard']);
         }, 500);
+        this.changeDetectorRef.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
         this.isVerifying = false;
         this.otpError.set(this.describeVerifyError(err));
+        this.changeDetectorRef.markForCheck();
       }
     });
   }
