@@ -69,6 +69,11 @@ export class AuthService {
   // already verified. Backend authorization remains authoritative.
   private readonly roleKey = 'lumina-user-role';
 
+  // Stored the same way as role: the display name the backend returned at
+  // login time, kept purely so the header can show who is signed in without
+  // decoding the JWT or issuing an extra API call. Carries no authority.
+  private readonly fullNameKey = 'lumina-user-name';
+
   // Mirrors whatever is currently in storage so route guards/UI can react
   // to auth state with a signal instead of re-reading storage each time.
   private readonly authenticated = signal(this.hasStoredAccessToken());
@@ -86,7 +91,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password }).pipe(
       tap((response) => {
         if (!response.requiresTwoFactor) {
-          this.setAccessToken(response.accessToken, response.user.role);
+          this.setAccessToken(response.accessToken, response.user.role, response.user.fullName);
         }
       })
     );
@@ -101,7 +106,7 @@ export class AuthService {
       .post<VerifyLoginResponse>(`${this.apiUrl}/verify-login`, { challengeToken, twoFactorCode })
       .pipe(
         tap((response) => {
-          this.setAccessToken(response.accessToken, response.user.role);
+          this.setAccessToken(response.accessToken, response.user.role, response.user.fullName);
         })
       );
   }
@@ -157,7 +162,28 @@ export class AuthService {
     return window.localStorage.getItem(this.roleKey) as AuthRole | null;
   }
 
-  private setAccessToken(accessToken: string, role: AuthRole): void {
+  /**
+   * The signed-in user's display name and role, for UI purposes only (e.g.
+   * the header profile). Returns null when there is no authenticated user,
+   * so callers can fall back to a generic placeholder rather than showing a
+   * stale or invented identity.
+   */
+  getCurrentUserDisplay(): { fullName: string; role: AuthRole } | null {
+    if (!this.canUseStorage()) {
+      return null;
+    }
+
+    const fullName = window.localStorage.getItem(this.fullNameKey);
+    const role = window.localStorage.getItem(this.roleKey) as AuthRole | null;
+
+    if (!fullName || !role) {
+      return null;
+    }
+
+    return { fullName, role };
+  }
+
+  private setAccessToken(accessToken: string, role: AuthRole, fullName: string): void {
     this.authenticated.set(true);
 
     if (!this.canUseStorage()) {
@@ -165,6 +191,7 @@ export class AuthService {
     }
     window.localStorage.setItem(this.accessTokenKey, accessToken);
     window.localStorage.setItem(this.roleKey, role);
+    window.localStorage.setItem(this.fullNameKey, fullName);
   }
 
   private clearAccessToken(): void {
@@ -175,6 +202,7 @@ export class AuthService {
     }
     window.localStorage.removeItem(this.accessTokenKey);
     window.localStorage.removeItem(this.roleKey);
+    window.localStorage.removeItem(this.fullNameKey);
   }
 
   private hasStoredAccessToken(): boolean {
