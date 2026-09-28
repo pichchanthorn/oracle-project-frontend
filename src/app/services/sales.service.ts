@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export type PaymentMethod = 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'QR';
@@ -49,8 +49,9 @@ export class SalesService {
     return this.http.post<CreateSaleResponse>(this.apiUrl, request);
   }
 
-  getSales(): Observable<Sale[]> {
-    return this.http.get<Sale[]>(this.apiUrl);
+  getSales(limit = 50, offset = 0): Observable<Sale[]> {
+    const params = new HttpParams().set('limit', limit).set('offset', offset);
+    return this.http.get<Sale[]>(this.apiUrl, { params });
   }
 
   getSaleById(id: number): Observable<CreateSaleResponse> {

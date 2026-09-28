@@ -35,6 +35,7 @@ export class AppSidebar implements OnInit {
   readonly navItems: SidebarItem[] = [
     { icon: 'grid_view', label: 'Dashboard', route: '/dashboard', pageCode: 'DASHBOARD' },
     { icon: 'receipt_long', label: 'Transactions', route: '/sales', pageCode: 'SALES' },
+    { icon: 'history', label: 'Sales History', route: '/sales-history', pageCode: 'SALES' },
     { icon: 'workspace_premium', label: 'Certificates' },
     { icon: 'groups', label: 'Clients' }
   ];

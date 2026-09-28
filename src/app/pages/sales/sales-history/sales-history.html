@@ -1,0 +1,145 @@
+<div class="unit-page">
+  <header class="page-header">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span>Sales</span>
+        <span>/</span>
+        <strong>History</strong>
+      </nav>
+      <h2>Sales History</h2>
+      <p>Review completed sales, newest first.</p>
+    </div>
+  </header>
+
+  <p class="load-error" *ngIf="loadError()">
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    {{ loadError() }}
+    <button class="dismiss-button" type="button" aria-label="Retry" (click)="retry()">
+      <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+    </button>
+  </p>
+
+  <section class="data-card" aria-label="Sales history grid">
+    <table>
+      <thead>
+        <tr>
+          <th>Sale ID</th>
+          <th>Date</th>
+          <th>Payment Method</th>
+          <th>Cashier</th>
+          <th>Customer</th>
+          <th class="align-right">Total</th>
+          <th class="align-right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading()">
+          <td colspan="7" class="empty-state">Loading sales…</td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && loadError()">
+          <td colspan="7" class="empty-state">Unable to display sales.</td>
+        </tr>
+
+        <ng-container *ngIf="!isLoading() && !loadError()">
+          <tr *ngFor="let sale of sales(); trackBy: trackBySaleId">
+            <td class="measure">#{{ sale.saleId }}</td>
+            <td>{{ sale.saleDate | date: 'medium' }}</td>
+            <td>
+              <span class="payment-pill" [attr.data-method]="sale.paymentMethod">{{ sale.paymentMethod }}</span>
+            </td>
+            <td class="measure">#{{ sale.cashierId }}</td>
+            <td class="measure">{{ sale.customerId === null ? 'Guest' : '#' + sale.customerId }}</td>
+            <td class="align-right measure">{{ sale.totalAmount }}</td>
+            <td class="align-right">
+              <button class="row-action" type="button" aria-label="View sale" (click)="viewSale(sale.saleId)">
+                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="sales().length === 0">
+            <td colspan="7" class="empty-state">No sales found.</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="pagination">
+    <p>Page <strong>{{ currentPage }}</strong></p>
+    <div>
+      <button type="button" [disabled]="!canGoToPreviousPage" (click)="goToPreviousPage()">Previous</button>
+      <button type="button" [disabled]="!canGoToNextPage" (click)="goToNextPage()">Next</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal-backdrop" *ngIf="isDetailOpen()" role="dialog" aria-modal="true" aria-labelledby="sale-detail-title">
+  <div class="modal sale-detail-modal">
+    <header class="modal-header">
+      <h3 id="sale-detail-title">Sale Detail</h3>
+      <button class="row-action" type="button" aria-label="Close modal" (click)="closeDetail()">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <p class="empty-state" *ngIf="isLoadingDetail()">Loading sale details…</p>
+
+      <p class="load-error modal-error" *ngIf="!isLoadingDetail() && detailError()">{{ detailError() }}</p>
+
+      <ng-container *ngIf="!isLoadingDetail() && !detailError() && selectedSale() as detail">
+        <dl class="sale-detail-summary">
+          <div>
+            <dt>Sale ID</dt>
+            <dd>#{{ detail.sale.saleId }}</dd>
+          </div>
+          <div>
+            <dt>Sale Date</dt>
+            <dd>{{ detail.sale.saleDate | date: 'medium' }}</dd>
+          </div>
+          <div>
+            <dt>Payment Method</dt>
+            <dd>{{ detail.sale.paymentMethod }}</dd>
+          </div>
+          <div>
+            <dt>Cashier</dt>
+            <dd>#{{ detail.sale.cashierId }}</dd>
+          </div>
+          <div>
+            <dt>Customer</dt>
+            <dd>{{ detail.sale.customerId === null ? 'Guest' : '#' + detail.sale.customerId }}</dd>
+          </div>
+          <div>
+            <dt>Total Amount</dt>
+            <dd>{{ detail.sale.totalAmount }}</dd>
+          </div>
+        </dl>
+
+        <table class="sale-items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th class="align-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of detail.items; trackBy: trackBySaleItemId">
+              <td>{{ productName(item.productId) }}</td>
+              <td class="measure">{{ item.quantity }}</td>
+              <td class="measure">{{ item.unitPrice }}</td>
+              <td class="align-right measure">{{ item.subtotal }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </div>
+
+    <footer class="modal-actions">
+      <button class="secondary-action" type="button" (click)="closeDetail()">Close</button>
+    </footer>
+  </div>
+</div>
